@@ -16,14 +16,14 @@ Das gesamte Werkzeug ist **eine einzige HTML-Datei**. Es braucht keinen Server, 
 
 Über GitHub Pages lässt sich das Tool direkt im Browser öffnen, ohne Download. Die Startseite ist `index.html`. Auch online werden alle Daten nur lokal im Browser verarbeitet; beim Aufruf der Seite erfährt GitHub als Anbieter allerdings die IP-Adresse. Wer das vermeiden will, nutzt die heruntergeladene Datei oder legt sie auf einen schulischen Server.
 
-Eine ausführliche Anleitung von der itslearning-Umfrage bis zu den Listen steht in [`docs/anleitung-itslearning.md`](docs/anleitung-itslearning.md).
+Eine ausführliche Anleitung mit Screenshots – von der itslearning-Umfrage über die SuBITI-Klassenlisten bis zu den fertigen Listen – steht in [`docs/anleitung-itslearning.md`](docs/anleitung-itslearning.md).
 
 ## Ablauf in der Schule
 
 1. **Umfrage in itslearning** anlegen: eine Matrixfrage mit den Spalten „1. Wahl“, „2. Wahl“, „3. Wahl“ und den Kursen als Optionen. Für mehrere Halbjahre in einem Durchgang je Halbjahr eine Matrixfrage. Empfohlen: zusätzlich eine Frage „Klasse“.
 2. **Export** der Ergebnisse als Excel-Datei.
 3. **Einlesen** im Tool, dazu optional:
-   - **Klassenlisten** aus der Schulverwaltung (eine oder mehrere Dateien, z. B. eine pro Klasse; Excel oder CSV, auch UTF-16/tabulatorgetrennt). Genutzt werden Name, Klasse und – empfohlen – Username.
+   - **Klassenlisten** aus dem SuBITI-Portal (Univention Management Console → Unterricht → Klassenlisten), eine oder mehrere Dateien, z. B. eine pro Klasse. Beide Exportformate werden gelesen. Genutzt werden Name, Klasse und Username.
    - **Historie** aus früheren Runden (die CSV, die das Tool selbst exportiert).
    - **Schulprofil** mit Kursen, Plätzen, Kategorien und Regeln (JSON, enthält keine Schülerdaten).
 4. **Verteilen und prüfen**, bei Bedarf einzelne Zuteilungen von Hand ändern.
