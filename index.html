@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kurswahl verteilen</title>
+<meta name="description" content="Kurswahlen an Schulen fair verteilen – mit einer itslearning-Umfrage und einem Werkzeug, das komplett im Browser läuft.">
+<style>
+/* Farb-Tokens wie im Tool, hell und dunkel */
+:root {
+  --bg: #EEF1F4; --panel: #FFFFFF; --ink: #16212B; --muted: #5A6876; --line: #D3DAE1;
+  --court: #1E5A8A; --court-soft: #DCE8F2; --mark: #E8B021; --ok: #2E7D4F; --ok-soft: #DCEFE3;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0F1720; --panel: #17222D; --ink: #E7EDF2; --muted: #9AA9B7; --line: #2A3947;
+    --court: #6AAEE3; --court-soft: #1C3346; --mark: #F0C042; --ok: #62C08A; --ok-soft: #163126; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 17px; }
+h1, h2 { font-family: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif; font-weight: 700; line-height: 1.1; margin: 0; }
+a { color: var(--court); }
+:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 48px 16px 64px; }
+header { padding-bottom: 32px; margin-bottom: 36px; border-bottom: 3px solid var(--mark); position: relative; }
+header::after { content: ""; position: absolute; left: 50%; bottom: -15px; width: 28px; height: 28px; margin-left: -14px;
+  border: 3px solid var(--mark); border-radius: 50%; background: var(--bg); }
+h1 { font-size: clamp(2.4rem, 7vw, 3.8rem); color: var(--court); }
+.lead { font-size: 1.15rem; color: var(--muted); max-width: 60ch; margin: 14px 0 26px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn { display: inline-block; padding: 12px 20px; border-radius: 10px; font-weight: 600; text-decoration: none;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.btn.primary { background: var(--court); border-color: var(--court); color: #fff; }
+@media (prefers-color-scheme: dark) { .btn.primary { color: #0F1720; } }
+.privacy { display: inline-block; margin-top: 18px; font-size: 0.95rem; color: var(--ok); background: var(--ok-soft); padding: 6px 12px; border-radius: 999px; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 18px; }
+h2 { font-size: 1.7rem; margin-bottom: 12px; }
+ol, ul { padding-left: 1.3em; margin: 0; }
+li { margin: 6px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.card b { display: block; margin-bottom: 4px; }
+.card span { color: var(--muted); font-size: 0.95rem; }
+footer { color: var(--muted); font-size: 0.9rem; margin-top: 28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Kurswahl verteilen</h1>
+    <p class="lead">Sportkurse, Wahlpflicht, AGs oder Projektwoche: Wünsche per itslearning-Umfrage sammeln, Plätze fair verteilen und fertige Kurs- und Klassenlisten erhalten.</p>
+    <div class="actions">
+      <a class="btn primary" href="kurswahl-verteilen.html">Tool öffnen</a>
+      <a class="btn" href="kurswahl-verteilen.html" download>Als Datei herunterladen</a>
+    </div>
+    <div class="privacy">🔒 Alle Daten bleiben im Browser – nichts wird hochgeladen oder gespeichert.</div>
+  </header>
+
+  <section>
+    <h2>So funktioniert es</h2>
+    <ol>
+      <li><b>Umfrage in itslearning</b> mit einer Matrixfrage „1. Wahl“, „2. Wahl“, „3. Wahl“ anlegen, empfohlen dazu eine Frage zur Klasse.</li>
+      <li><b>Ergebnisse exportieren</b> und im Tool einlesen, optional mit Klassenlisten aus der Schulverwaltung und der Historie früherer Halbjahre.</li>
+      <li><b>Plätze und Regeln</b> festlegen und verteilen lassen. Einzelne Zuteilungen lassen sich von Hand ändern.</li>
+      <li><b>Excel exportieren:</b> ein Blatt pro Kurs für die Kursleitungen, ein Blatt pro Klasse für die Klassenleitungen, dazu ein Protokoll.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Fair und nachvollziehbar</h2>
+    <div class="grid">
+      <div class="card"><b>Bestmögliche Verteilung</b><span>Möglichst viele bekommen einen möglichst hohen Wunsch – nicht der Reihe nach, nicht nach Alphabet.</span></div>
+      <div class="card"><b>Kein Trick mit Mehrfachnennung</b><span>Dreimal denselben Kurs anzukreuzen bringt keinen Vorteil.</span></div>
+      <div class="card"><b>Ausgleich über Halbjahre</b><span>Wer zuletzt Pech hatte, ist bei einem Gleichstand zuerst dran.</span></div>
+      <div class="card"><b>Losnummer und Protokoll</b><span>Jede Verteilung lässt sich exakt wiederholen und belegen.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Ausprobieren</h2>
+    <p style="margin:0">Im Tool genügt ein Klick auf „Mit Beispieldaten ausprobieren“. Fiktive Testdateien zum Herunterladen, die ausführliche Anleitung zur itslearning-Umfrage und der Quellcode liegen im <a href="https://github.com/skb-referat10/kurswahl-tool">GitHub-Repository</a>.</p>
+  </section>
+
+  <footer>Prototyp des Teams digitale Schulentwicklung, Referat 10, Senator für Kinder und Bildung Bremen. Freie Nutzung unter der MIT-Lizenz. Vor dem Einsatz an einer Schule bitte mit Schulleitung und Datenschutzverantwortlichen abstimmen.</footer>
+</div>
+</body>
+</html>
