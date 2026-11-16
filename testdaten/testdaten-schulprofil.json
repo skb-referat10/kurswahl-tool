@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "rules": {
+    "noRepeat": true,
+    "catOn": false,
+    "catMax": 1,
+    "divOn": true,
+    "divMin": 2,
+    "allowRest": true,
+    "includeNonVoters": true
+  },
+  "rounds": [
+    {
+      "q": 1,
+      "label": "Halbjahr"
+    }
+  ],
+  "courses": [
+    {
+      "name": "Fußball",
+      "category": "Mannschaftsspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 8
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 8
+        }
+      ]
+    },
+    {
+      "name": "Volleyball",
+      "category": "Mannschaftsspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Floorball",
+      "category": "Mannschaftsspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Basketball",
+      "category": "Mannschaftsspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Badminton",
+      "category": "Rückschlagspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Tennis",
+      "category": "Rückschlagspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 4
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 4
+        }
+      ]
+    },
+    {
+      "name": "Tanz",
+      "category": "Gestalten und Turnen",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Turnen",
+      "category": "Gestalten und Turnen",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 4
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 4
+        }
+      ]
+    },
+    {
+      "name": "Schwimmen",
+      "category": "Schwimmen",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": false,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Klettern",
+      "category": "Wagnis und Abenteuer",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 6
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 6
+        }
+      ]
+    },
+    {
+      "name": "Hockey",
+      "category": "Mannschaftsspiele",
+      "rounds": [
+        {
+          "q": 1,
+          "offered": true,
+          "capacity": 8
+        },
+        {
+          "q": 2,
+          "offered": true,
+          "capacity": 8
+        }
+      ]
+    }
+  ]
+}

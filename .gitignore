@@ -1,0 +1,8 @@
+# Echte Schülerdaten gehören nicht ins Repository
+echtdaten/
+kurswahl-ergebnis*.xlsx
+kurswahl-historie*.csv
+results_for_survey*.xlsx
+*schulprofil*.json
+!testdaten/testdaten-schulprofil.json
+.DS_Store
