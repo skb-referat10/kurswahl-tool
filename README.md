@@ -4,11 +4,13 @@ Ein schlankes Werkzeug, um Kurswahlen an Schulen fair zu verteilen – zum Beisp
 
 Das gesamte Werkzeug ist **eine einzige HTML-Datei**. Es braucht keinen Server, keine Installation und keine Anmeldung und läuft im Browser auf Mac, PC und iPad – auch offline.
 
+**▶ [Tool im Browser öffnen](https://skb-referat10.github.io/kurswahl-tool/kurswahl-verteilen.html)** · [Startseite](https://skb-referat10.github.io/kurswahl-tool/) · [Anleitung mit Screenshots](docs/anleitung-itslearning.md) · [Datei herunterladen](https://github.com/skb-referat10/kurswahl-tool/raw/main/kurswahl-verteilen.html)
+
 ![Ergebnis einer Verteilung mit Beispieldaten](docs/screenshot-verteilung.png)
 
 ## Schnellstart
 
-1. `kurswahl-verteilen.html` herunterladen und im Browser öffnen.
+1. [Tool online öffnen](https://skb-referat10.github.io/kurswahl-tool/kurswahl-verteilen.html) – oder `kurswahl-verteilen.html` herunterladen und per Doppelklick im Browser öffnen.
 2. „Mit Beispieldaten ausprobieren“ anklicken – oder die Dateien aus `testdaten/` laden.
 3. Kurse, Plätze und Regeln einstellen, „Kurse verteilen“, Ergebnis als Excel sichern.
 
