@@ -46,19 +46,25 @@ Die Klassenfrage hilft dem Tool, Schüler:innen mit gleichem Namen auseinanderzu
 
 ## 2. Wahl ankündigen
 
-Ein Textvorschlag für die Schüler:innen, z. B. als Einleitung der Umfrage:
+Den Text für die Beschreibung der Umfrage erzeugt das Tool selbst: In Schritt 2 unter **„📝 Text für die itslearning-Umfrage“**. Er erklärt den Schüler:innen genau die Regeln, die du eingestellt hast – Mehrfachnennungen, Restplätze, Ausgleich, Wiederholungen und Bereiche (Kategorien) mit den zugehörigen Kursen. Das geht schon **vor** der Wahl: Tool öffnen, Regeln einstellen oder das Schulprofil laden, Text anpassen und mit „Text kopieren“ in die Umfrage übernehmen.
 
-> Bitte gib **drei verschiedene Kurse** an: deinen Erst-, Zweit- und Drittwunsch. Die Plätze werden fair verteilt – Name, Klasse und der Zeitpunkt deiner Abgabe spielen dabei keine Rolle. Dreimal denselben Kurs anzukreuzen bringt keinen Vorteil; mit drei verschiedenen Wünschen steigt deine Chance, dass einer davon klappt. Wer beim letzten Mal nur den Drittwunsch bekommen hat, wird bei einem Gleichstand bevorzugt.
+Mit den Standardregeln lautet er zum Beispiel:
 
-Hinweis: Formulierungen wie „wenn du dreimal das Gleiche wählst, bekommst du deine Wahl vielleicht nicht“ stimmen mit den aktuellen Regeln des Tools nicht mehr: Mehrfachnennungen bringen weder Vor- noch Nachteil, solange noch Plätze frei sind.
+> **So funktioniert die Wahl**
+> Gib deinen 1., 2. und 3. Wunsch an – bitte drei verschiedene Kurse.
+> • Fair verteilt: Die Plätze werden so vergeben, dass möglichst viele einen möglichst hohen Wunsch bekommen. Name, Klasse und der Zeitpunkt deiner Abgabe spielen keine Rolle. Ist ein Kurs bei gleich guten Wünschen überbucht, entscheidet das Los.
+> • Dreimal derselbe Kurs? Das zählt wie ein einziger Wunsch und bringt dir keinen Vorteil. Mit drei verschiedenen Wünschen steigt deine Chance, dass einer davon klappt.
+> • Kein Wunsch mehr frei? Dann bekommst du einen Platz in einem Kurs, der noch freie Plätze hat.
+> • Ausgleich: Wer bei der letzten Wahl nur den 3. Wunsch oder einen Restplatz bekommen hat, ist bei der nächsten Wahl bei einem Gleichstand zuerst dran.
+> • Keine Wiederholung: Einen Kurs, den du schon hattest, kannst du nicht noch einmal bekommen. Wähle ihn deshalb nicht erneut.
 
 ## 3. Ergebnisse exportieren
 
 Nach Ablauf der Frist exportierst du die Ergebnisse der Umfrage als **Excel-Datei**. Die Datei enthält ein Blatt „Antworten“ mit Name, Zeitstempel und je einer Spalte pro Wahl sowie ein Blatt „Zusammenfassung“. Speichere sie auf dem Dienstgerät oder in der schulischen Ablage, nicht in einer privaten Cloud.
 
-## 4. Klassenlisten aus dem SuBITI-Portal exportieren (optional, empfohlen)
+## 4. Klassenlisten aus dem SuBITI-Portal exportieren (optional)
 
-Mit Klassenlisten enthält das Ergebnis auch Listen für die Klassenleitungen, und du siehst sofort, wer noch nicht gewählt hat.
+Mit der Klassenfrage aus Abschnitt 1 erstellt das Tool die Listen für die Klassenleitungen auch ohne Klassenliste. Die SuBITI-Klassenlisten lohnen sich zusätzlich, wenn du sehen willst, **wer noch nicht gewählt hat**, oder wenn Falschangaben bei der Klasse auffallen sollen.
 
 Melde dich im **SuBITI-Portal** (passwort.schule.bremen.de) an. Unter **Univention Management Console** findest du die Kachel **Unterricht** und darin das Modul **Klassenlisten**.
 
@@ -80,7 +86,7 @@ Das Tool liest beide Exportformate (das empfohlene im UTF-16-Format mit Tabulato
 2. **Kurse und Regeln:** Plätze und Kategorien pro Kurs eintragen und die Regeln einstellen. Beim zweiten Mal genügt es, das gespeicherte **Schulprofil** zu laden.
 3. **Klassenlisten:** die SuBITI-Exporte laden. Offene Fragen zu ähnlichen oder gleichen Namen werden hier angezeigt.
 4. **Historie** (ab dem zweiten Halbjahr): die Historie-CSV aus der letzten Runde laden.
-5. **Kurse verteilen**, das Ergebnis prüfen und bei Bedarf einzelne Zuteilungen von Hand ändern. Die Losnummer wird angezeigt und im Protokoll festgehalten.
+5. **Kurse verteilen**, das Ergebnis prüfen und bei Bedarf einzelne Zuteilungen von Hand ändern, etwa wenn zwei Schüler:innen tauschen möchten. Von Hand geänderte Plätze bleiben beim erneuten Verteilen erhalten, stehen im Protokoll und werden in der Historie als „von Hand“ vermerkt. Beim Ausgleich im nächsten Halbjahr zählen sie nicht als Pech. Die Losnummer wird angezeigt und im Protokoll festgehalten.
 
 ## 6. Ergebnisse weitergeben
 

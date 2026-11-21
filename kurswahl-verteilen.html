@@ -194,11 +194,11 @@ footer { color: var(--muted); font-size: 0.88rem; margin-top: 30px; }
   </section>
 
   <!-- Schritt 2 -->
-  <section class="step" id="s2" aria-disabled="true">
+  <section class="step" id="s2">
     <div class="step-head"><span class="step-num">2</span><div><h2>Kurse und Regeln</h2><p>Plätze pro Kurs, Kategorie (z. B. Bewegungsfeld) und welche Kurse in welcher Runde angeboten werden.</p></div></div>
     <div id="roundLabels"></div>
     <div class="scroll"><table id="courseTable"></table></div>
-    <div class="row" style="margin-top:10px">
+    <div class="row" style="margin-top:10px" id="addCourseRow" hidden>
       <input type="text" id="newCourse" placeholder="Weiteren Kurs hinzufügen" style="padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);min-width:220px">
       <button class="btn small" id="btnAddCourse">Hinzufügen</button>
     </div>
@@ -211,6 +211,17 @@ footer { color: var(--muted); font-size: 0.88rem; margin-top: 30px; }
       <div class="rule"><label><input type="checkbox" id="rulePech" checked><span>Ausgleich bei Gleichstand<small>Wer in der letzten Runde nur den 3. Wunsch oder einen Restplatz bekam, ist bei einem Gleichstand zuerst dran. Niemand verliert dadurch einen sicheren Platz.</small></span></label></div>
       <div class="rule"><label><input type="checkbox" id="ruleRest" checked><span>Restplätze vergeben<small>Wer keinen Wunsch bekommt, landet in einem Kurs mit freien Plätzen statt ohne Platz.</small></span></label></div>
     </div>
+
+    <details class="rule" id="surveyBox" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:600">📝 Text für die itslearning-Umfrage</summary>
+      <p style="margin:10px 0;color:var(--muted);font-size:0.95rem">Erklärt den Schüler:innen die eingestellten Regeln. Er passt sich an, wenn du Regeln oder Kategorien änderst. Du kannst ihn hier anpassen und dann in die Beschreibung der Umfrage kopieren.</p>
+      <textarea id="surveyText" rows="14" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);font:inherit;font-size:0.95rem;line-height:1.45"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small primary" id="btnCopyText">Text kopieren</button>
+        <button class="btn small" id="btnResetText">Neu erzeugen</button>
+        <span id="surveyNote" style="color:var(--muted);font-size:0.9rem"></span>
+      </div>
+    </details>
 
     <h3 class="sub">Klassenliste (optional)</h3>
     <p style="margin:0 0 10px;color:var(--muted);font-size:0.95rem">Eine oder mehrere Dateien (z. B. eine pro Klasse) mit <b>Name</b> oder <b>Nachname</b>/<b>Vorname</b>, <b>Klasse</b> und – empfohlen – <b>Username</b>. Der Benutzername unterscheidet auch Schüler:innen mit gleichem Namen. Weitere Spalten wie E-Mail-Adressen oder Personalnummern werden nur zum Abgleich gelesen und nicht exportiert. Dann enthält der Export Klassenlisten für die Klassenleitungen, und du siehst, wer noch nicht gewählt hat.</p>
@@ -661,7 +672,7 @@ function allocate(state) {
 
       const p = prev[s.key];
       if (p?.locked) {
-        res[s.key] = { course: p.course, locked: true, rank: p.course ? rankOf(uniq, p.course) : null };
+        res[s.key] = { course: p.course, locked: true, manual: !!p.manual, rank: p.course ? rankOf(uniq, p.course) : null };
         if (p.course && capLeft.has(p.course)) capLeft.set(p.course, capLeft.get(p.course) - 1);
         continue;
       }
@@ -709,7 +720,8 @@ function allocate(state) {
     // Pech dieser Runde gilt für die nächste Runde
     if (rules.pechBonus) pech = new Map(state.students.map(s => {
       const r = res[s.key];
-      return [s.key, !r?.course || r.rank === 'R' ? 2 : r.rank >= 3 ? 1 : 0];
+      // Von Hand geänderte Plätze (z. B. ein Tausch) zählen nicht als Pech
+      return [s.key, r?.manual ? 0 : !r?.course || r.rank === 'R' ? 2 : r.rank >= 3 ? 1 : 0];
     }));
   }
   return { result, meta };
@@ -718,6 +730,7 @@ function allocate(state) {
 function pechFromText(t) {
   const s = norm(t);
   if (!s) return 0;
+  if (s.includes('von hand')) return 0;
   if (s.includes('restplatz') || s.includes('ohne platz')) return 2;
   const m = s.match(/(\d+)\.\s*wunsch/);
   return m && +m[1] >= 3 ? 1 : 0;
@@ -830,6 +843,8 @@ async function loadWahl(wb) {
     const p = parseWahlWorkbook(wb);
     Object.assign(state, { rounds: p.rounds, subs: p.subs, dupDecisions: new Map(), courses: p.courses, wahlHasUser: p.hasUser, wahlHasKlasse: p.hasKlasse, result: null, meta: null, activeRound: p.rounds[0].id, allocLog: [], manualLog: [],
       nameLinks: new Map(), nameRejects: new Set(), manualClass: new Map(), nameLog: [] });
+    // Ein vorher geladenes Schulprofil auf die neuen Kurse anwenden
+    if (state.profile) applyProfile(state.profile);
     rebuildStudents();
     syncRoster();
     if (state.histEntries.length) applyHistory();
@@ -1089,7 +1104,9 @@ function renderCourses() {
     </div></td>`).join('')}
     <td><button class="linkbtn" data-del="${esc(c.key)}" aria-label="${esc(c.name)} entfernen">Entfernen</button></td>
   </tr>`).join('');
-  $('courseTable').innerHTML = head + body;
+  $('courseTable').innerHTML = state.rounds.length ? head + body
+    : '<tr><td style="color:var(--muted)">Die Kurse erscheinen, sobald in Schritt 1 eine Wahl eingelesen ist. Regeln, Schulprofil und den Text für die Umfrage kannst du schon vorher einstellen.</td></tr>';
+  renderSurveyText();
 }
 function shortLabel(rd) { return rd.label.length > 26 ? rd.label.slice(0, 25) + '…' : rd.label; }
 
@@ -1130,8 +1147,56 @@ $('ruleRest').addEventListener('change', e => { state.rules.allowRest = e.target
 $('ruleNeutral').addEventListener('change', e => { state.rules.neutralDup = e.target.checked; invalidate(); });
 $('rulePech').addEventListener('change', e => { state.rules.pechBonus = e.target.checked; invalidate(); });
 
+/* ---------- Textbaustein für die Umfrage ---------- */
+function buildSurveyText() {
+  const r = state.rules, L = [];
+  L.push('So funktioniert die Wahl');
+  L.push('');
+  L.push('Gib deinen 1., 2. und 3. Wunsch an – bitte drei verschiedene Kurse.');
+  L.push('');
+  L.push('• Fair verteilt: Die Plätze werden so vergeben, dass möglichst viele einen möglichst hohen Wunsch bekommen. Name, Klasse und der Zeitpunkt deiner Abgabe spielen keine Rolle. Ist ein Kurs bei gleich guten Wünschen überbucht, entscheidet das Los.');
+  if (r.neutralDup) L.push('• Dreimal derselbe Kurs? Das zählt wie ein einziger Wunsch und bringt dir keinen Vorteil. Mit drei verschiedenen Wünschen steigt deine Chance, dass einer davon klappt.');
+  L.push(r.allowRest
+    ? '• Kein Wunsch mehr frei? Dann bekommst du einen Platz in einem Kurs, der noch freie Plätze hat.'
+    : '• Kein Wunsch mehr frei? Dann bekommst du zunächst keinen Platz und wir sprechen mit dir über einen freien Kurs.');
+  if (r.pechBonus) L.push('• Ausgleich: Wer bei der letzten Wahl nur den 3. Wunsch oder einen Restplatz bekommen hat, ist bei der nächsten Wahl bei einem Gleichstand zuerst dran.');
+  if (r.noRepeat) L.push('• Keine Wiederholung: Einen Kurs, den du schon hattest, kannst du nicht noch einmal bekommen. Wähle ihn deshalb nicht erneut.');
+  // Bereiche nur nennen, wenn Kurse wirklich Kategorien haben
+  const cats = new Map();
+  for (const c of state.courses.values()) {
+    if (state.rounds.length && !state.rounds.some(rd => c.rounds[rd.id]?.offered)) continue;
+    const cat = (c.category || c.name).trim();
+    if (!cats.has(cat)) cats.set(cat, []);
+    cats.get(cat).push(c.name);
+  }
+  const realCats = [...cats.entries()].filter(([cat, list]) => list.length > 1 || norm(cat) !== norm(list[0]));
+  if (r.catOn) L.push(`• Abwechslung: Die Kurse sind in Bereiche eingeteilt. Du kannst höchstens ${r.catMax === 1 ? 'einen Kurs' : r.catMax + ' Kurse'} aus demselben Bereich belegen – auch über mehrere Halbjahre.`);
+  if (r.divOn) L.push(`• Erst Neues ausprobieren: Einen Bereich kannst du erst wieder belegen, wenn du vorher schon ${r.divMin} verschiedene Bereiche hattest.`);
+  if ((r.catOn || r.divOn) && realCats.length) {
+    L.push(''); L.push('Die Bereiche:');
+    for (const [cat, list] of realCats.sort((a, b) => a[0].localeCompare(b[0], 'de'))) L.push(`– ${cat}: ${list.sort((a, b) => a.localeCompare(b, 'de')).join(', ')}`);
+  }
+  if (r.noRepeat || r.catOn || r.divOn) { L.push(''); L.push('Wähle deshalb am besten Kurse, die du noch nicht hattest. Wünsche, die nach diesen Regeln nicht möglich sind, werden bei der Verteilung übersprungen.'); }
+  return L.join('\n');
+}
+function renderSurveyText() {
+  const ta = $('surveyText'); if (!ta) return;
+  const fresh = buildSurveyText();
+  if (!state.surveyEdited) { ta.value = fresh; $('surveyNote').textContent = ''; }
+  else if (fresh !== state.surveyLast) $('surveyNote').textContent = 'Regeln geändert – „Neu erzeugen“ übernimmt sie (deine Änderungen gehen dabei verloren).';
+  state.surveyLast = fresh;
+}
+$('surveyText').addEventListener('input', () => { state.surveyEdited = true; });
+$('btnResetText').addEventListener('click', () => { state.surveyEdited = false; renderSurveyText(); });
+$('btnCopyText').addEventListener('click', async () => {
+  const ta = $('surveyText');
+  try { await navigator.clipboard.writeText(ta.value); toast('Text kopiert.'); }
+  catch { ta.focus(); ta.select(); toast('Text markiert – mit Cmd+C bzw. Strg+C kopieren.'); }
+});
+
 // Wenn sich Regeln ändern, ist das alte Ergebnis nur noch ein Vorschlag
 function invalidate() {
+  renderSurveyText();
   if (state.result) {
     const v = validate(state); state.valid = v; renderResults();
     $('results').insertAdjacentHTML('afterbegin', '<div class="notice info" style="margin:14px 0 0">Einstellungen geändert. Mit „Kurse verteilen“ neu berechnen.</div>');
@@ -1155,6 +1220,17 @@ $('fileProfile').addEventListener('change', e => {
     try {
       const p = JSON.parse(fr.result);
       if (p.version !== 1) throw new Error('Unbekanntes Profilformat.');
+      state.profile = p;
+      const added = applyProfile(p);
+      renderAll(); invalidate();
+      toast(!state.rounds.length ? 'Profil geladen. Regeln sind übernommen, Kurse und Plätze greifen, sobald du die Wahl einliest.'
+        : added ? `Profil geladen. ${added} Kurs(e) aus dem Profil ergänzt, aber nicht angeboten – bei Bedarf anhaken.` : 'Profil geladen.');
+    } catch (err) { toast('Profil konnte nicht gelesen werden: ' + err.message); }
+  };
+  fr.readAsText(f); e.target.value = '';
+});
+// Profil anwenden: Regeln übernehmen, Kurse mit Kategorie, Plätzen und Angebot ergänzen
+function applyProfile(p) {
       Object.assign(state.rules, p.rules || {});
       $('ruleNoRepeat').checked = state.rules.noRepeat; $('ruleCat').checked = state.rules.catOn;
       $('ruleCatMax').value = state.rules.catMax; $('ruleRest').checked = state.rules.allowRest;
@@ -1176,12 +1252,8 @@ $('fileProfile').addEventListener('change', e => {
           if (c.rounds[rid]) c.rounds[rid] = { offered: c.rounds[rid].offered || !!pr.offered, capacity: +pr.capacity || 0 };
         }
       }
-      renderCourses(); invalidate();
-      toast(added ? `Profil geladen. ${added} Kurs(e) aus dem Profil ergänzt, aber nicht angeboten – bei Bedarf anhaken.` : 'Profil geladen.');
-    } catch (err) { toast('Profil konnte nicht gelesen werden: ' + err.message); }
-  };
-  fr.readAsText(f); e.target.value = '';
-});
+      return added;
+}
 
 /* ---------- Kategorien im Überblick ---------- */
 function categoryStats(rid) {
@@ -1257,14 +1329,14 @@ function runAllocation() {
 $('btnAllocate').addEventListener('click', runAllocation);
 $('btnReroll').addEventListener('click', () => { state.seed = Math.floor(Math.random() * 1e9); $('seedInput').value = state.seed; runAllocation(); toast('Neu ausgelost, Losnummer ' + state.seed + '.'); });
 $('btnUnlockAll').addEventListener('click', () => {
-  for (const rid in state.result) for (const k in state.result[rid]) state.result[rid][k].locked = false;
+  for (const rid in state.result) for (const k in state.result[rid]) { state.result[rid][k].locked = false; state.result[rid][k].manual = false; }
   state.manualLog.push({ time: new Date(), round: 'alle', name: 'alle', from: 'fixiert', to: 'alle Fixierungen gelöst' });
   runAllocation(); toast('Fixierungen gelöst und neu verteilt.');
 });
 
 const badge = r => {
   if (!r || !r.course) return '<span class="badge bX">ohne Platz</span>';
-  if (r.rank === 'R') return '<span class="badge bR">Restplatz</span>';
+  if (r.rank === 'R') return r.manual ? '<span class="badge b2">kein Wunsch</span>' : '<span class="badge bR">Restplatz</span>';
   return `<span class="badge b${r.rank}">${r.rank}. Wunsch</span>`;
 };
 
@@ -1322,7 +1394,7 @@ function renderResults() {
       <td>${chips}</td>
       <td title="${esc(ci.list.join(', '))}" style="text-align:center">${ci.count}</td>
       <td><select data-stu="${esc(s.key)}" aria-label="Kurs für ${esc(dn(s))}">${opts.join('')}</select></td>
-      <td>${badge(r)}${r?.locked ? '<span class="pin">📌 fixiert</span>' : ''}</td></tr>`;
+      <td>${badge(r)}${r?.manual ? '<span class="pin">✋ von Hand</span>' : r?.locked ? '<span class="pin">📌 fixiert</span>' : ''}</td></tr>`;
   }).join('');
 
   box.innerHTML = tabs + stats + lanes + renderCategoryPanel(rid) + `
@@ -1353,12 +1425,12 @@ $('results').addEventListener('change', e => {
   const rid = state.activeRound, v = e.target.value, cur = state.result[rid][k];
   const stu = state.students.find(s => s.key === k), rdLabel = state.rounds.find(r => r.id === rid).label;
   if (v === '__auto__') {
-    cur.locked = false;
+    cur.locked = false; cur.manual = false;
     state.manualLog.push({ time: new Date(), round: rdLabel, name: dn(stu), from: courseName(cur.course) || 'ohne Platz', to: 'Fixierung gelöst' });
   } else {
     const course = v === '__none__' ? null : v;
     state.manualLog.push({ time: new Date(), round: rdLabel, name: dn(stu), from: courseName(cur?.course) || 'ohne Platz', to: courseName(course) || 'ohne Platz' });
-    state.result[rid][k] = { course, locked: true, rank: course ? rankOf(state.meta[rid][k].uniq, course) : null };
+    state.result[rid][k] = { course, locked: true, manual: true, rank: course ? rankOf(state.meta[rid][k].uniq, course) : null };
   }
   state.valid = validate(state); renderResults();
 });
@@ -1377,7 +1449,9 @@ async function saveFile(filename, data) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
-const rankText = r => !r?.course ? 'ohne Platz' : r.rank === 'R' ? 'Restplatz' : `${r.rank}. Wunsch`;
+const rankText = r => !r?.course ? 'ohne Platz'
+  : r.manual ? (r.rank && r.rank !== 'R' ? `${r.rank}. Wunsch (von Hand)` : 'von Hand')
+  : r.rank === 'R' ? 'Restplatz' : `${r.rank}. Wunsch`;
 const courseName = k => k ? (state.courses.get(k)?.name ?? k) : '';
 const sheetSafe = (s, used) => {
   let base = s.replace(/[\[\]:*?\/\\]/g, ' ').slice(0, 31).trim() || 'Blatt', name = base, i = 2;
@@ -1606,7 +1680,8 @@ $('nameCheck').addEventListener('change', e => {
 /* ---------- Gesamtdarstellung ---------- */
 function renderAll() {
   const has = state.students.length > 0;
-  $('s2').setAttribute('aria-disabled', String(!has));
+  $('s2').setAttribute('aria-disabled', 'false');
+  $('addCourseRow').hidden = !state.rounds.length;
   $('s3').setAttribute('aria-disabled', String(!has));
   if (!state.result) { $('s4').setAttribute('aria-disabled', 'true'); $('btnReroll').hidden = true; $('btnUnlockAll').hidden = true; }
   $('ruleCat').checked = state.rules.catOn; $('ruleCatMax').value = state.rules.catMax;
