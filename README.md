@@ -42,11 +42,22 @@ Einstellbare Regeln:
 | Kurs nicht wiederholen | Niemand bekommt einen Kurs, den er schon hatte. |
 | Kategorie begrenzen | Höchstens x Kurse pro Kategorie (z. B. Bewegungsfeld). |
 | Vielfalt vor Wiederholung | Eine Kategorie erst wieder nach x verschiedenen Kategorien. |
-| Kein Vorteil durch Mehrfachnennung | Dreimal denselben Kurs anzukreuzen verschafft keinen Vorrang. |
-| Ausgleich bei Gleichstand | Wer zuletzt nur den 3. Wunsch oder einen Restplatz bekam, ist bei Gleichstand zuerst dran. |
+| Kein Vorteil durch Mehrfachnennung oder unmögliche Wünsche | Mehrfach genannte und nach den Regeln nicht mögliche Wünsche zählen wie nicht angegeben und verschaffen keinen Vorrang. |
+| Ausgleich bei Gleichstand | Wer zuletzt nur den 3. gültigen Wunsch oder keinen Wunsch bekam, ist bei Gleichstand zuerst dran. Von Hand geänderte Plätze zählen nicht. |
 | Restplätze vergeben | Wer keinen Wunsch bekommt, landet in einem Kurs mit freien Plätzen. |
 
 Bei echten Gleichständen entscheidet das Los. Die **Losnummer** wird angezeigt: Mit denselben Dateien, Einstellungen und derselben Nummer entsteht exakt dieselbe Verteilung. Das Protokoll-Blatt im Export dokumentiert Regeln, Losnummern, jede manuelle Änderung und jede Namenszuordnung.
+
+### Wie Tricks ausgeschlossen werden
+
+Ein faires Verfahren muss auch dann fair bleiben, wenn jemand versucht, es auszutricksen. Zwei Lücken haben wir beim Testen gefunden und geschlossen – beide nach dem Prinzip **„Ungültige Wünsche zählen wie nicht angegeben“**:
+
+- **Dreimal derselbe Kurs:** Wer nur einen Kurs angibt, konnte bei einem überbuchten Kurs nicht verdrängt werden, ohne einen Restplatz zu bekommen – und wurde deshalb bevorzugt. In einer Simulation (20 Plätze, 30 Erstwünsche) bekamen diese Schüler:innen ihren Kurs zu 100 %, alle anderen zu 58 %. Jetzt liegen beide bei 67 %.
+- **Gesperrte Ausweichwünsche:** Derselbe Effekt ließ sich erreichen, indem man als 2. und 3. Wunsch Kurse angibt, die nach den Regeln gar nicht möglich sind (z. B. aus einer schon belegten Kategorie). Auch hier: vorher 100 % gegen 58 %, jetzt 67 % für alle.
+
+Außerdem richtet sich der **Ausgleich** im nächsten Halbjahr nach der Position unter den *gültigen* Wünschen. Wer zwei unmögliche Kurse vorne einträgt und seinen eigentlichen Wunsch an dritter Stelle, bekommt dadurch keinen Vorrang bei der nächsten Wahl. Die fortlaufende Historie enthält dafür eine eigene Spalte „Ausgleich“.
+
+Der Text für die itslearning-Umfrage erklärt diese Regeln den Schüler:innen offen.
 
 ## Namen abgleichen
 

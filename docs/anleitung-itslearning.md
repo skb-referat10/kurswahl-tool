@@ -56,6 +56,7 @@ Mit den Standardregeln lautet er zum Beispiel:
 > • Dreimal derselbe Kurs? Das zählt wie ein einziger Wunsch und bringt dir keinen Vorteil. Mit drei verschiedenen Wünschen steigt deine Chance, dass einer davon klappt.
 > • Kein Wunsch mehr frei? Dann bekommst du einen Platz in einem Kurs, der noch freie Plätze hat.
 > • Ausgleich: Wer bei der letzten Wahl nur den 3. Wunsch oder einen Restplatz bekommen hat, ist bei der nächsten Wahl bei einem Gleichstand zuerst dran.
+> • Nicht mögliche Wünsche (siehe Regeln unten) zählen, als hättest du sie nicht angegeben. Sie verschaffen dir keinen Vorteil – du verschenkst damit nur einen Wunsch.
 > • Keine Wiederholung: Einen Kurs, den du schon hattest, kannst du nicht noch einmal bekommen. Wähle ihn deshalb nicht erneut.
 
 ## 3. Ergebnisse exportieren

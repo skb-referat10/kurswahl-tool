@@ -207,7 +207,7 @@ footer { color: var(--muted); font-size: 0.88rem; margin-top: 30px; }
       <div class="rule"><label><input type="checkbox" id="ruleNoRepeat" checked><span>Kurs nicht wiederholen<small>Niemand bekommt einen Kurs, den er schon hatte oder in einer anderen Runde bekommt.</small></span></label></div>
       <div class="rule"><label><input type="checkbox" id="ruleCat"><span>Kategorie begrenzen<small>Höchstens <input type="number" id="ruleCatMax" min="1" value="1"> Kurs(e) pro Kategorie, über alle Runden und die Historie.</small></span></label></div>
       <div class="rule"><label><input type="checkbox" id="ruleDiv"><span>Vielfalt vor Wiederholung<small>Eine Kategorie darf erst wieder vorkommen, wenn schon <input type="number" id="ruleDivMin" min="1" value="3"> verschiedene Kategorien belegt sind.</small></span></label></div>
-      <div class="rule"><label><input type="checkbox" id="ruleNeutral" checked><span>Kein Vorteil durch Mehrfachnennung<small>Wer weniger als drei verschiedene Kurse angibt, wird nicht bevorzugt: Freie Kurse zählen bei ihm wie der nächste Wunsch. Empfohlen.</small></span></label></div>
+      <div class="rule"><label><input type="checkbox" id="ruleNeutral" checked><span>Kein Vorteil durch Mehrfachnennung oder unmögliche Wünsche<small>Mehrfach genannte und nach den Regeln nicht mögliche Wünsche zählen wie nicht angegeben. Wer so weniger als drei gültige Wünsche hat, wird nicht bevorzugt: Freie Kurse zählen wie der nächste Wunsch. Empfohlen.</small></span></label></div>
       <div class="rule"><label><input type="checkbox" id="rulePech" checked><span>Ausgleich bei Gleichstand<small>Wer in der letzten Runde nur den 3. Wunsch oder einen Restplatz bekam, ist bei einem Gleichstand zuerst dran. Niemand verliert dadurch einen sicheren Platz.</small></span></label></div>
       <div class="rule"><label><input type="checkbox" id="ruleRest" checked><span>Restplätze vergeben<small>Wer keinen Wunsch bekommt, landet in einem Kurs mit freien Plätzen statt ohne Platz.</small></span></label></div>
     </div>
@@ -479,13 +479,13 @@ function parseHistoryWorkbook(wb) {
   const nIdx = col('name') >= 0 ? col('name') : header.findIndex(h => h.includes('name'));
   const kIdx = col('kurs') >= 0 ? col('kurs') : header.findIndex(h => h.includes('kurs'));
   if (nIdx < 0 || kIdx < 0) throw new Error('Die Historie braucht die Spalten „Name“ und „Kurs“.');
-  const cIdx = col('kategorie'), rIdx = col('runde', 'halbjahr'), klIdx = col('klasse'), wIdx = col('wunsch'), uIdx = col('username', 'benutzername');
+  const cIdx = col('kategorie'), rIdx = col('runde', 'halbjahr'), klIdx = col('klasse'), wIdx = col('wunsch'), uIdx = col('username', 'benutzername'), aIdx = col('ausgleich');
   const entries = [];
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r], name = String(row[nIdx] ?? '').trim(), kurs = String(row[kIdx] ?? '').trim();
     if (!name || !kurs) continue;
     const g = i => i >= 0 ? String(row[i] ?? '').trim() : '';
-    entries.push({ name, kurs, kategorie: g(cIdx), runde: g(rIdx), klasse: g(klIdx), wunsch: g(wIdx), user: g(uIdx) });
+    entries.push({ name, kurs, kategorie: g(cIdx), runde: g(rIdx), klasse: g(klIdx), wunsch: g(wIdx), user: g(uIdx), ausgleich: g(aIdx) });
   }
   return entries;
 }
@@ -663,8 +663,10 @@ function allocate(state) {
         else { reason = blockReason(s.key, k, rd.id, ridx); if (reason) status = 'blocked'; }
         return { key: k, name: c ? c.name : k, rank: i + 1, status, reason };
       });
+      // Nicht erfüllbare Wünsche zählen wie nicht angegeben: Rang nur unter den gültigen Wünschen
+      let eff = 0; for (const w of wishInfo) w.eff = w.status === 'ok' ? ++eff : null;
       const blocked = wishInfo.filter(w => w.status === 'blocked');
-      if (blocked.length) issues.push('Wunsch gestrichen: ' + blocked.map(w => `${w.name} (${w.reason})`).join(', '));
+      if (blocked.length) issues.push('Wunsch gestrichen: ' + blocked.map(w => `${w.name} (${w.reason})`).join(', ') + (rules.neutralDup ? ' – zählt wie nicht angegeben' : ''));
       const pv = pech.get(s.key) || 0;
       if (s.isNamesake && !(s.user || s.rosterUser) && state.history.has(norm(s.name))) issues.push('Historie nicht eindeutig – gleicher Name mehrfach, Klassenliste mit Benutzername laden');
       if (pv) issues.push(pv === 2 ? 'Vorrang bei Gleichstand – zuletzt Restplatz' : 'Vorrang bei Gleichstand – zuletzt 3. Wunsch');
@@ -672,7 +674,8 @@ function allocate(state) {
 
       const p = prev[s.key];
       if (p?.locked) {
-        res[s.key] = { course: p.course, locked: true, manual: !!p.manual, rank: p.course ? rankOf(uniq, p.course) : null };
+        const lw = wishInfo.find(w => w.key === p.course && w.status === 'ok');
+        res[s.key] = { course: p.course, locked: true, manual: !!p.manual, rank: p.course ? rankOf(uniq, p.course) : null, eff: lw ? lw.eff : 'R' };
         if (p.course && capLeft.has(p.course)) capLeft.set(p.course, capLeft.get(p.course) - 1);
         continue;
       }
@@ -690,26 +693,30 @@ function allocate(state) {
       const tie = step => pv * step;
       for (const w of wishInfo) {
         if (w.status !== 'ok') continue;
-        const e = mcf.addEdge(1 + i, 1 + n + cs.indexOf(w.key), 1, RANK_COST[Math.min(w.rank - 1, RANK_COST.length - 1)] * K + tie(w.rank - 1));
-        edgeInfo.push({ e, s: s.key, course: w.key, rank: w.rank });
+        const e = mcf.addEdge(1 + i, 1 + n + cs.indexOf(w.key), 1, RANK_COST[Math.min(w.eff - 1, RANK_COST.length - 1)] * K + tie(w.eff - 1));
+        edgeInfo.push({ e, s: s.key, course: w.key, rank: w.rank, eff: w.eff });
       }
       // Weniger als drei verschiedene Wünsche selbst angegeben (z. B. dreimal derselbe Kurs):
       // Jeder freie Kurs zählt wie der nächste Wunsch, damit Mehrfachnennungen keinen Vorrang verschaffen.
       // Wer dagegen wegen der Regeln nicht ausweichen kann, behält den Schutz durch die hohen Restplatzkosten.
-      const neutral = rules.neutralDup && uniq.length > 0 && uniq.length < RANK_COST.length;
-      const restCost = neutral ? RANK_COST[uniq.length] : REST_COST;
+      // Weniger als drei gültige Wünsche (Mehrfachnennung oder gesperrte Wünsche): kein Vorrang,
+      // jeder freie erlaubte Kurs zählt wie der nächste gültige Wunsch
+      const valid = wishInfo.filter(w => w.status === 'ok').length;
+      const neutral = rules.neutralDup && uniq.length > 0 && valid < RANK_COST.length;
+      const restCost = neutral ? RANK_COST[valid] : REST_COST;
+      const restEff = neutral ? valid + 1 : 'R';
       if (rules.allowRest || neutral) {
         for (const ck of shuffle(cs, rng)) {
           if (uniq.includes(ck) || blockReason(s.key, ck, rd.id, ridx)) continue;
           const e = mcf.addEdge(1 + i, 1 + n + cs.indexOf(ck), 1, restCost * K + tie(RANK_COST.length));
-          edgeInfo.push({ e, s: s.key, course: ck, rank: 'R' });
+          edgeInfo.push({ e, s: s.key, course: ck, rank: 'R', eff: restEff });
         }
       }
     });
     cs.forEach((ck, j) => mcf.addEdge(1 + n + j, T, Math.max(0, capLeft.get(ck)), 0));
     mcf.run(S, T);
     for (const s of free) res[s.key] = { course: null, rank: null, locked: false };
-    for (const x of edgeInfo) if (mcf.cap[x.e] === 0) res[x.s] = { course: x.course, rank: x.rank, locked: false };
+    for (const x of edgeInfo) if (mcf.cap[x.e] === 0) res[x.s] = { course: x.course, rank: x.rank, eff: x.eff, locked: false };
 
     // Ergebnis dieser Runde als „belegt“ für spätere Runden merken
     for (const s of free) {
@@ -721,7 +728,7 @@ function allocate(state) {
     if (rules.pechBonus) pech = new Map(state.students.map(s => {
       const r = res[s.key];
       // Von Hand geänderte Plätze (z. B. ein Tausch) zählen nicht als Pech
-      return [s.key, r?.manual ? 0 : !r?.course || r.rank === 'R' ? 2 : r.rank >= 3 ? 1 : 0];
+      return [s.key, pechOf(r)];
     }));
   }
   return { result, meta };
@@ -737,8 +744,20 @@ function pechFromText(t) {
 }
 function lastHistoryPech(state, s) {
   const list = histOf(state, s);
-  return list.length ? pechFromText(list[list.length - 1].wunsch) : 0;
+  if (!list.length) return 0;
+  const last = list[list.length - 1], a = norm(last.ausgleich);
+  // Neue Historie: Spalte „Ausgleich“; ältere Dateien: aus dem Wunschtext ableiten
+  if (a) return a.startsWith('ja') ? (a.includes('kein') ? 2 : 1) : 0;
+  return pechFromText(last.wunsch);
 }
+// Ausgleich für die nächste Runde: 2 = kein gültiger Wunsch erfüllt, 1 = 3. gültiger Wunsch, 0 = sonst
+function pechOf(r) {
+  if (r?.manual) return 0;
+  if (!r?.course) return 2;
+  const e = r.eff ?? r.rank;
+  return e === 'R' ? 2 : e >= 3 ? 1 : 0;
+}
+const pechLabel = v => v === 2 ? 'ja (kein Wunsch erfüllt)' : v === 1 ? 'ja (3. Wunsch)' : 'nein';
 function rankOf(uniq, courseKey) { const i = uniq.indexOf(courseKey); return i >= 0 ? i + 1 : 'R'; }
 
 /* ---------- Prüfen nach manuellen Änderungen ---------- */
@@ -1156,6 +1175,7 @@ function buildSurveyText() {
   L.push('');
   L.push('• Fair verteilt: Die Plätze werden so vergeben, dass möglichst viele einen möglichst hohen Wunsch bekommen. Name, Klasse und der Zeitpunkt deiner Abgabe spielen keine Rolle. Ist ein Kurs bei gleich guten Wünschen überbucht, entscheidet das Los.');
   if (r.neutralDup) L.push('• Dreimal derselbe Kurs? Das zählt wie ein einziger Wunsch und bringt dir keinen Vorteil. Mit drei verschiedenen Wünschen steigt deine Chance, dass einer davon klappt.');
+  if (r.neutralDup && (r.noRepeat || r.catOn || r.divOn)) L.push('• Nicht mögliche Wünsche (siehe Regeln unten) zählen, als hättest du sie nicht angegeben. Sie verschaffen dir keinen Vorteil – du verschenkst damit nur einen Wunsch.');
   L.push(r.allowRest
     ? '• Kein Wunsch mehr frei? Dann bekommst du einen Platz in einem Kurs, der noch freie Plätze hat.'
     : '• Kein Wunsch mehr frei? Dann bekommst du zunächst keinen Platz und wir sprechen mit dir über einen freien Kurs.');
@@ -1560,9 +1580,8 @@ $('btnExportXlsx').addEventListener('click', () => {
   P.push(['Kategorie begrenzen', ru.catOn ? `höchstens ${ru.catMax} pro Kategorie` : 'aus']);
   P.push(['Vielfalt vor Wiederholung', ru.divOn ? `Wiederholung erst nach ${ru.divMin} verschiedenen Kategorien` : 'aus']);
   P.push(['Restplätze vergeben', yn(ru.allowRest)]);
-  P.push(['Kein Vorteil durch Mehrfachnennung', ru.neutralDup ? `ja – bei weniger als ${RANK_COST.length} verschiedenen Wünschen zählt jeder freie Kurs wie der nächste Wunsch` : 'nein – wer nur einen Kurs angibt, wird bei Überbuchung geschützt']);
-  P.push(['Ausgleich bei Gleichstand', ru.pechBonus ? 'ja – wer in der letzten Runde (Historie oder vorherige Runde) den 3. Wunsch oder einen Restplatz bekam, hat bei Gleichstand Vorrang vor dem Los' : 'nein – bei Gleichstand entscheidet nur das Los']);
-  P.push(['Schutz bei Regel-Sperren', 'Wer wegen Historie oder Kategorie-Regeln nicht ausweichen kann, wird bei Überbuchung bevorzugt (Restplatz kostet ' + REST_COST + ' Punkte)']);
+  P.push(['Kein Vorteil durch Mehrfachnennung oder unmögliche Wünsche', ru.neutralDup ? `ja – mehrfach genannte und nach den Regeln nicht mögliche Wünsche zählen wie nicht angegeben; bei weniger als ${RANK_COST.length} gültigen Wünschen zählt jeder freie Kurs wie der nächste Wunsch` : 'nein – wer nur einen gültigen Wunsch hat, wird bei Überbuchung bevorzugt']);
+  P.push(['Ausgleich bei Gleichstand', ru.pechBonus ? 'ja – wer in der letzten Runde (Historie oder vorherige Runde) den 3. gültigen Wunsch oder keinen Wunsch bekam, hat bei Gleichstand Vorrang vor dem Los; von Hand geänderte Plätze zählen nicht' : 'nein – bei Gleichstand entscheidet nur das Los']);
   P.push(['Gewichtung (Strafpunkte)', `1. Wunsch ${RANK_COST[0]}, 2. Wunsch ${RANK_COST[1]}, 3. Wunsch ${RANK_COST[2]}, Restplatz ${REST_COST}`]);
   P.push(['Gleichstände', 'zuerst Ausgleich (falls aktiv), danach zufällige Reihenfolge, festgelegt durch die Losnummer; Namen und Reihenfolge in der Datei spielen keine Rolle']);
   P.push([], ['Kursangebot'], ['Runde', 'Kurs', 'Kategorie', 'Plätze', 'Belegt']);
@@ -1588,13 +1607,13 @@ $('btnExportXlsx').addEventListener('click', () => {
 $('btnExportCsv').addEventListener('click', () => {
   if (!state.result) return;
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const lines = [['Name', 'Klasse', 'Username', 'Runde', 'Kurs', 'Kategorie', 'Wunsch'].map(q).join(';')];
+  const lines = [['Name', 'Klasse', 'Username', 'Runde', 'Kurs', 'Kategorie', 'Wunsch', 'Ausgleich'].map(q).join(';')];
   // Fortlaufend: bisherige Historie übernehmen, dann die neue Verteilung anhängen
   for (const list of state.history.values()) for (const hh of list)
-    lines.push([hh.name, hh.klasse, hh.user || '', hh.runde, hh.kurs, histLabel(state, hh), hh.wunsch].map(q).join(';'));
+    lines.push([hh.name, hh.klasse, hh.user || '', hh.runde, hh.kurs, histLabel(state, hh), hh.wunsch, hh.ausgleich || ''].map(q).join(';'));
   for (const rd of state.rounds) for (const s of state.students) {
     const r = state.result[rd.id][s.key];
-    if (r?.course) lines.push([s.name, s.klasse || '', s.user || s.rosterUser || '', rd.label, courseName(r.course), catLabel(state, r.course), rankText(r)].map(q).join(';'));
+    if (r?.course) lines.push([s.name, s.klasse || '', s.user || s.rosterUser || '', rd.label, courseName(r.course), catLabel(state, r.course), rankText(r), pechLabel(pechOf(r))].map(q).join(';'));
   }
   // BOM, damit Excel die Umlaute richtig anzeigt
   saveFile('kurswahl-historie.csv', '\uFEFF' + lines.join('\r\n'));
