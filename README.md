@@ -52,6 +52,17 @@ Bei echten Gleichständen entscheidet das Los. Die **Losnummer** wird angezeigt:
 - Gleiche Namen werden nie still zusammengeführt: Das Tool fragt „eine Person oder zwei?“ und lässt die Einträge der Klassenliste von Hand zuordnen.
 - Mit einer **Username-Spalte** in der Klassenliste (und idealerweise im Umfrage-Export) ist die Zuordnung eindeutig; die Historie läuft dann über den Benutzernamen.
 
+## Bewusst nicht umgesetzt: Verteilung nach Geschlecht
+
+Beim Bremer BildungsBarcamp kam die Idee auf, das Geschlecht in der Umfrage abzufragen und die Kurse damit gleichmäßig mit Jungen und Mädchen zu besetzen. Wir haben uns bewusst dagegen entschieden:
+
+- **Gleichbehandlung:** Die Verteilung richtet sich ausschließlich nach den Wünschen. Für das Verfahren ist das Geschlecht irrelevant – damit gelten für alle dieselben Regeln.
+- **Echte Wünsche gehen vor:** Eine Quote würde Wünsche verdrängen. Ein Mädchen bekäme Fußball dann nicht, weil der Kurs „schon genug Mädchen“ hat. Das wäre gegenüber Schüler:innen und Eltern kaum zu begründen.
+- **Datensparsamkeit:** Nach der DSGVO sollen nur Daten erhoben werden, die für den Zweck nötig sind. Für eine Kurswahl ist das Geschlecht nicht nötig.
+- **Keine Zuordnung erzwingen:** Eine Abfrage „Junge/Mädchen“ zwingt Schüler:innen, sich einzuordnen. Für Jugendliche, die sich als divers verstehen oder noch unsicher sind, ist das unangenehm – und mit einer dritten Option wird eine Quotenregel schnell widersprüchlich.
+
+Wird ein Kurs im Einzelfall sehr einseitig besetzt, kann die Lehrkraft einzelne Plätze von Hand tauschen. Diese Änderungen werden im Protokoll dokumentiert.
+
 ## Datenschutz
 
 - Alle Daten werden **ausschließlich lokal im Browser** verarbeitet. Die Datei baut keine Verbindung nach außen auf; die Excel-Bibliothek ist eingebettet, es werden keine Schriften oder Skripte nachgeladen.
